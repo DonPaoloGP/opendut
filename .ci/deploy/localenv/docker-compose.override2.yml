@@ -1,0 +1,45 @@
+name: opendut
+
+# Docker Compose override file to add a 2nd Traefik instance with mTLS configuration
+# https://docs.docker.com/compose/how-tos/multiple-compose-files/extends/
+# https://docs.docker.com/reference/compose-file/merge/#replace-value
+#
+# docker compose -f .ci/deploy/localenv/docker-compose.yml -f .ci/deploy/localenv/docker-compose.override2.yml --env-file .ci/deploy/localenv/data/secrets/.env --env-file .ci/deploy/localenv/.env.development --env-file .env up -d
+
+services:
+  traefik:
+    extends:
+      file: docker-compose.yml
+      service: traefik
+    environment:
+      - OPENDUT_TRAEFIK_CLIENT_AUTH_TYPE=RequireAndVerifyClientCert  # enable mTLS
+    # removes network DNS aliases on the main Traefik instance
+    networks: !override
+      - opendut_local
+
+  traefik-internal:
+    container_name: opendut-traefik-no-mtls
+    extends:
+      file: docker-compose.yml
+      service: traefik
+
+    volumes: !override
+      - ${OPENDUT_TRAEFIK_CONFIG_PATH:-./data/traefik/config/}:/etc/traefik/dynamic
+      - provision-secrets-data:/provision:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${SHARED_CERTS_HOST_DIR}:${SHARED_CERTS_MOUNT_DIR}:ro
+    # override the ports to avoid conflict with the first Traefik instance
+    ports: !override
+      - "127.0.0.1:8082:8080"  # 2nd Traefik dashboard, only on localhost, do not expose publicly
+    networks:
+      opendut_local:
+        aliases:
+          - ${OPENDUT_DOMAIN_SUFFIX}
+          - ${OPENDUT_DOMAIN_NETBIRD}
+          - ${OPENDUT_DOMAIN_NETBIRD_API}
+          - ${OPENDUT_DOMAIN_AUTH}
+          - ${OPENDUT_DOMAIN_SIGNAL}
+          - ${OPENDUT_DOMAIN_OPENTELEMETRY}
+          - ${OPENDUT_DOMAIN_CARL}
+
+    # uses all domains specified in the main compose file
