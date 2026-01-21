@@ -1,8 +1,10 @@
 use std::process::Command;
+use std::path::Path;
 use std::str::FromStr;
 
 use clap::ArgAction;
 use cicero::path::repo_path;
+use anyhow::anyhow;
 use crate::core::types::Package;
 use crate::core::util::RunRequiringSuccess;
 
@@ -55,6 +57,11 @@ pub fn build_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::R
     let version = format!("org.opencontainers.image.version={}", crate::build::PKG_VERSION);
     let created = format!("org.opencontainers.image.created={now}");
     let revision = format!("org.opencontainers.image.revision={}", crate::build::COMMIT_HASH);
+    let dockerfile_path = match package.dockerfile_path() {
+        Some(path) => Path::new(path).display().to_string(),
+        None => return Err(anyhow!("No Dockerfile for package {}", package)),
+};
+
 
     Command::new("docker")
         .current_dir(repo_path!())
@@ -62,7 +69,7 @@ pub fn build_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::R
             "build",
             "--no-cache",
             "--file",
-            &repo_path!(".ci/docker/carl/Dockerfile").display().to_string(),
+            &dockerfile_path,
             "--build-arg",
             &image_version_build_arg,
             "--label", &source,
@@ -79,8 +86,14 @@ pub fn build_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::R
 }
 
 
+//pub fn build_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
+//    println!("hello World");
+//    Ok(())
+//}
+
 pub fn build_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
-    println!("hello World");
+    // Hier wird EdgarDocker-Package genutzt, damit build_docker_image den richtigen Dockerfile-Pfad verwendet
+    build_docker_image(&Package::EdgarDocker, tag)?;
     Ok(())
 }
 

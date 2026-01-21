@@ -4,9 +4,11 @@ use std::fmt::{Display, Formatter};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, strum::EnumIter)]
 pub enum Package {
     Carl,
+    CarlDocker,
     CarlApi,
     Cleo,
     Edgar,
+    EdgarDocker,
     Lea,
     NetbirdClientApi,
     Model,
@@ -14,8 +16,20 @@ pub enum Package {
     Util,
     Vpn,
     VpnNetbird,
-    IntegrationTests,
+    IntegrationTests
 }
+
+impl Package {
+    pub fn dockerfile_path(&self) -> Option<&'static str> {
+        match self {
+            Package::CarlDocker => Some(".ci/docker/carl/Dockerfile"),
+            Package::EdgarDocker => Some(".ci/docker/edgar/Dockerfile"),
+            _ => None,
+        }
+    }
+}
+
+
 
 impl Package {
     pub fn ident(&self) -> String {
@@ -32,6 +46,8 @@ impl Package {
             Package::Vpn => "opendut-vpn",
             Package::VpnNetbird => "opendut-vpn-netbird",
             Package::IntegrationTests => "opendut-integration-tests",
+            Package::EdgarDocker =>".ci/docker/edgar/Dockerfile",
+            Package::CarlDocker => ".ci/docker/carl/Dockerfile",
         }.to_string()
     }
 
