@@ -1,12 +1,11 @@
 use std::process::Command;
-use std::path::Path;
 use std::str::FromStr;
 
-use clap::ArgAction;
-use cicero::path::repo_path;
-use anyhow::anyhow;
 use crate::core::types::Package;
 use crate::core::util::RunRequiringSuccess;
+use anyhow::anyhow;
+use cicero::path::repo_path;
+use clap::ArgAction;
 
 /// A Docker tag
 #[derive(Clone, Debug)]
@@ -34,7 +33,7 @@ impl DockerCli {
     pub fn default_handling(&self, package: Package) -> crate::Result {
         build_docker_image(&package, self.tag.clone())?;
         if self.publish {
-            crate::tasks::docker::publish_docker_image(&package, self.tag.clone())?;
+            publish_docker_image(&package, self.tag.clone())?;
         }
         Ok(())
     }
@@ -68,7 +67,7 @@ pub fn build_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::R
     let created = format!("org.opencontainers.image.created={now}");
     let revision = format!("org.opencontainers.image.revision={}", crate::build::COMMIT_HASH);
     let dockerfile_path = match package.dockerfile_path() {
-        Some(path) => Path::new(path).display().to_string(),
+        Some(path) => path.to_string(),
         None => return Err(anyhow!("No Dockerfile for package {}", package)),
 };
 
