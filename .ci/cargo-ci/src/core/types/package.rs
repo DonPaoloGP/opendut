@@ -46,8 +46,9 @@ impl Package {
             Package::Vpn => "opendut-vpn",
             Package::VpnNetbird => "opendut-vpn-netbird",
             Package::IntegrationTests => "opendut-integration-tests",
-            Package::EdgarDocker =>".ci/docker/edgar/Dockerfile",
-            Package::CarlDocker => ".ci/docker/carl/Dockerfile",
+            // Docker packages map to their image names (not Dockerfile paths)
+            Package::EdgarDocker => "opendut-edgar",
+            Package::CarlDocker => "opendut-carl",
         }.to_string()
     }
 

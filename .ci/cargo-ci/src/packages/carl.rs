@@ -70,7 +70,8 @@ impl CarlCli {
                 distribution::validate::validate_contents(target)?;
             }
             TaskCli::Docker(crate::tasks::docker::DockerCli { tag, publish }) => {
-                crate::tasks::docker::build_docker_image(&SELF_PACKAGE, tag.clone())?;
+                // Baue das CARL-Docker-Image über die dedizierte Funktion, die den CarlDocker-Pfad nutzt
+                crate::tasks::docker::build_carl_docker_image(tag.clone())?;
                 if publish {
                     crate::tasks::docker::publish_carl_docker_image(tag)?;
                 }

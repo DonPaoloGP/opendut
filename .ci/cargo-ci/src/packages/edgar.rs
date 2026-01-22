@@ -48,8 +48,8 @@ pub enum TaskCli {
     DistributionCopyLicenseJson(crate::tasks::distribution::copy_license_json::DistributionCopyLicenseJsonCli),
     DistributionBundleFiles(crate::tasks::distribution::bundle::DistributionBundleFilesCli),
     DistributionValidateContents(crate::tasks::distribution::validate::DistributionValidateContentsCli),
-    /// Build Edgar Container
-    Docker, 
+    /// Build and optionally publish EDGAR Docker image
+    Docker(crate::tasks::docker::DockerCli), 
 }
 
 impl EdgarCli {
@@ -79,8 +79,11 @@ impl EdgarCli {
             TaskCli::DistributionValidateContents(crate::tasks::distribution::validate::DistributionValidateContentsCli { target }) => {
                 distribution::validate::validate_contents(target)?;
             }
-            TaskCli::Docker => {
-                crate::tasks::docker::build_edgar_docker_image(None)?;
+            TaskCli::Docker(crate::tasks::docker::DockerCli { tag, publish }) => {
+                crate::tasks::docker::build_edgar_docker_image(tag.clone())?;
+                if publish {
+                    crate::tasks::docker::publish_edgar_docker_image(tag)?;
+                }
             },
 
         };

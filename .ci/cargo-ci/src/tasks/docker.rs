@@ -98,8 +98,24 @@ pub fn build_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
 }
 
 
+pub fn build_carl_docker_image(tag: Option<DockerTag>) -> crate::Result {
+    // Hier wird CarlDocker-Package genutzt, damit build_docker_image den richtigen Dockerfile-Pfad verwendet
+    build_docker_image(&Package::CarlDocker, tag)?;
+    Ok(())
+}
+
+
 pub fn publish_carl_docker_image(tag: Option<DockerTag>) -> crate::Result {
     let package = Package::Carl;
+    Command::new("docker")
+        .current_dir(repo_path!())
+        .args(["push", &docker_container_uri(&package, &tag)])
+        .run_requiring_success()?;
+    Ok(())
+}
+
+pub fn publish_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
+    let package = Package::Edgar;
     Command::new("docker")
         .current_dir(repo_path!())
         .args(["push", &docker_container_uri(&package, &tag)])
