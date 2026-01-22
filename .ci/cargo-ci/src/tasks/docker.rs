@@ -30,6 +30,16 @@ pub struct DockerCli {
     pub publish: bool,
 }
 
+impl DockerCli {
+    pub fn default_handling(&self, package: Package) -> crate::Result {
+        build_docker_image(&package, self.tag.clone())?;
+        if self.publish {
+            crate::tasks::docker::publish_docker_image(&package, self.tag.clone())?;
+        }
+        Ok(())
+    }
+}
+
 const OPENDUT_DOCKER_IMAGE_HOST: &str = "ghcr.io";
 const OPENDUT_DOCKER_IMAGE_NAMESPACE: &str = "eclipse-opendut";
 
@@ -86,36 +96,7 @@ pub fn build_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::R
 }
 
 
-//pub fn build_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
-//    println!("hello World");
-//    Ok(())
-//}
-
-pub fn build_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
-    // Hier wird EdgarDocker-Package genutzt, damit build_docker_image den richtigen Dockerfile-Pfad verwendet
-    build_docker_image(&Package::EdgarDocker, tag)?;
-    Ok(())
-}
-
-
-pub fn build_carl_docker_image(tag: Option<DockerTag>) -> crate::Result {
-    // Hier wird CarlDocker-Package genutzt, damit build_docker_image den richtigen Dockerfile-Pfad verwendet
-    build_docker_image(&Package::CarlDocker, tag)?;
-    Ok(())
-}
-
-
-pub fn publish_carl_docker_image(tag: Option<DockerTag>) -> crate::Result {
-    let package = Package::Carl;
-    Command::new("docker")
-        .current_dir(repo_path!())
-        .args(["push", &docker_container_uri(&package, &tag)])
-        .run_requiring_success()?;
-    Ok(())
-}
-
-pub fn publish_edgar_docker_image(tag: Option<DockerTag>) -> crate::Result {
-    let package = Package::Edgar;
+pub fn publish_docker_image(package: &Package, tag: Option<DockerTag>) -> crate::Result {
     Command::new("docker")
         .current_dir(repo_path!())
         .args(["push", &docker_container_uri(&package, &tag)])
